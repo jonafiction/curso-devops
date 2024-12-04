@@ -1,18 +1,16 @@
-# Imagen base de Node.js 22
-FROM node:20-alpine
+# Imagen base de node 22
+FROM node:22-alpine
 
-# Configurar el directorio de trabajo dentro del contenedor
+#Configurar el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar el archivo package.json y realizar instalación de dependencias
+# Copiar los archivos package.json e instalar dependencias
 COPY package*.json ./
 RUN npm install
 
-# Copiar el resto del código al contenedor
+# Copiar el resto de los archivos
 COPY . .
 
-# Exponer el puerto 3000
 EXPOSE 3000
 
-# Comando para ejecutar la aplicación
 CMD ["npm", "start"]
