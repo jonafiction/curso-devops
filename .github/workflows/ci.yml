@@ -19,10 +19,23 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
 
       - name: Run tests
         run: npm test
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build Docker image
+        run: docker build -t jonafiction/mi-app:${{ github.sha }} .
+      - name: Tag Docker image
+        run: docker tag jonafiction/mi-app:${{ github.sha }} user/mi-app:latest
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/mi-app:${{ github.sha }}
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/mi-app:latest
