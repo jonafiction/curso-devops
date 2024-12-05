@@ -34,7 +34,7 @@ jobs:
       - name: Build Docker image
         run: docker build -t jonafiction/mi-app:${{ github.sha }} .
       - name: Tag Docker image
-        run: docker tag jonafiction/mi-app:${{ github.sha }} user/mi-app:latest
+        run: docker tag jonafiction/mi-app:${{ github.sha }} jonafiction/mi-app:latest
       - name: Push Docker image to Docker Hub
         run: |
           docker push ${{ vars.DOCKERHUB_USERNAME }}/mi-app:${{ github.sha }}
