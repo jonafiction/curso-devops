@@ -1,46 +1,29 @@
-name: CI Pipeline
-
+name: Deploy to ECS
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          node-version: "22"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: tu-region
 
-      - name: Install dependencies
-        run: npm install
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Run tests
-        run: npm test
-  docker-build:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Login Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build Docker image
-        run: docker build -t jonafiction/mi-app:${{ github.sha }} .
-      - name: Tag Docker image
-        run: docker tag jonafiction/mi-app:${{ github.sha }} jonafiction/mi-app:latest
-      - name: Push Docker image to Docker Hub
+      - name: Build and push
         run: |
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/mi-app:${{ github.sha }}
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/mi-app:latest
+          docker build -t ${{ secrets.ECR_REGISTRY }}/api-repo:latest .
+          docker push ${{ secrets.ECR_REGISTRY }}/api-repo:latest
+
+      - name: Run ECS Task
+        run: |
+          aws ecs run-task --cluster prueba2--task-definition task-prueba2:1
